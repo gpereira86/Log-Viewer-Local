@@ -1,0 +1,71 @@
+================================================================ 
+  LOGVIEWER - Instrucoes de Instalacao 
+================================================================ 
+ 
+1. CARREGAR A IMAGEM DOCKER: 
+ 
+   Windows (PowerShell): 
+   docker load -i logviewer-package.tar.gz 
+ 
+   Linux/Mac: 
+   gunzip -c logviewer-package.tar.gz | docker load 
+   Ou: docker load < logviewer-package.tar.gz 
+ 
+2. EXECUTAR A APLICACAO: 
+ 
+   Opcao A - Execucao simples: 
+   docker run -d -p 8080:80 --name logviewer logviewer:latest 
+ 
+   Opcao B - Com dados persistentes (recomendado): 
+   docker run -d -p 8080:80 -v logviewer-data:/var/www/html/data --name logviewer logviewer:latest 
+ 
+   Opcao C - Com acesso a logs locais: 
+   docker run -d -p 8080:80 -v logviewer-data:/var/www/html/data -v C:\caminho\para\logs:/htdocs --name logviewer logviewer:latest
+   
+   Opcao D - Com mapeamento automático via variável de ambiente:
+   docker run -d -p 8080:80 -v logviewer-data:/var/www/html/data \
+     -v C:\xampp\htdocs:/htdocs \
+     -e LOGVIEWER_VOLUMES="C:/xampp/htdocs:/htdocs" \
+     --name logviewer logviewer:latest
+   
+   NOTA: Com a Opção D, você pode usar tanto o caminho do host (C:/xampp/htdocs/...) 
+   quanto o caminho do container (/htdocs/...) ao adicionar projetos locais.
+
+================================================================
+  IMPORTANTE - MAPEAMENTO DE VOLUMES PARA LOGS LOCAIS
+================================================================
+
+⚠️ ATENÇÃO: Para poder navegar e encontrar logs locais usando o navegador
+   de diretórios na interface web, você DEVE mapear os diretórios no 
+   docker-compose.yml ou via comando docker run.
+
+   Sem mapear os volumes, o container não terá acesso aos diretórios do
+   seu sistema e o navegador não conseguirá listar os logs.
+
+   Exemplo no docker-compose.yml:
+   
+   volumes:
+     - .:/var/www/html
+     # Mapeie cada diretório onde você quer navegar:
+     - C:/xampp/htdocs:/htdocs
+     - C:/outro/caminho:/outro
+     # Linux/Mac:
+     # - /var/log:/var/log
+     # - /home/usuario/projetos:/projetos
+
+   Depois de mapear, reinicie o container:
+   docker-compose down
+   docker-compose up -d
+
+================================================================ 
+ 
+3. ACESSAR A APLICACAO: 
+ 
+   Abra no navegador: http://localhost:8080 
+ 
+4. PARAR A APLICACAO: 
+ 
+   docker stop logviewer 
+   docker rm logviewer 
+ 
+================================================================ 

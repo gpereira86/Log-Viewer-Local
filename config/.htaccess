@@ -1,0 +1,8 @@
+# Protege o diretório de configuração contra acesso direto
+Order allow,deny
+Deny from all
+
+# Alternativa para Apache 2.4+
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>

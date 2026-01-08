@@ -1,0 +1,26 @@
+version: "3.8"
+
+services:
+  log-viewer:
+    build: .
+    container_name: log-viewer-php
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www/html
+      # ⚠️ IMPORTANTE: Mapeie os diretórios onde você quer navegar e encontrar logs
+      # Sem esses mapeamentos, o navegador de diretórios não conseguirá acessar os logs!
+      # Formato: caminho-no-host:caminho-no-container
+      # Exemplo Windows:
+      - C:/xampp/htdocs:/htdocs
+      # Exemplo Linux/Mac (descomente e ajuste conforme necessário):
+      # - /var/log:/var/log
+      # - /home/usuario/projetos:/projetos
+      # - /opt/aplicacoes:/opt/aplicacoes
+      # Adicione quantos volumes precisar para acessar seus logs
+    environment:
+      # Configura mapeamento automático de volumes (opcional)
+      # Formato: LOGVIEWER_VOLUMES="host1:container1,host2:container2"
+      # Exemplo:
+      # LOGVIEWER_VOLUMES: "C:/xampp/htdocs:/htdocs,/var/log:/var/log"
+    restart: unless-stopped

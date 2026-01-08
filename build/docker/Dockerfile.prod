@@ -1,0 +1,45 @@
+FROM php:8.2-apache
+
+# Instala dependências para extensão ssh2
+RUN apt-get update && apt-get install -y \
+    libssh2-1-dev \
+    openssh-client \
+    && rm -rf /var/lib/apt/lists/*
+
+# Instala extensões PHP
+RUN docker-php-ext-install opcache
+
+# Instala extensão ssh2 via PECL
+RUN pecl install ssh2-1.4 \
+    && docker-php-ext-enable ssh2
+
+# Configura Apache
+RUN a2enmod rewrite
+
+ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
+
+RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/000-default.conf /etc/apache2/apache2.conf
+
+# Permitir que o .htaccess controle as rotas (front controller)
+RUN sed -ri 's/AllowOverride None/AllowOverride All/g' /etc/apache2/apache2.conf
+
+RUN echo "ServerName localhost" > /etc/apache2/conf-available/servername.conf \
+    && a2enconf servername
+
+WORKDIR /var/www/html
+
+# Copia todos os arquivos da aplicação
+COPY public/ /var/www/html/public/
+COPY src/ /var/www/html/src/
+COPY views/ /var/www/html/views/
+
+# Cria diretório data e garante permissões
+RUN mkdir -p /var/www/html/data \
+    && chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html \
+    && chmod -R 775 /var/www/html/data
+
+EXPOSE 80
+
+CMD ["apache2-foreground"]
+

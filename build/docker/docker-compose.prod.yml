@@ -1,0 +1,21 @@
+version: "3.8"
+
+services:
+  logviewer:
+    image: logviewer:latest
+    container_name: logviewer-prod
+    ports:
+      - "8080:80"
+    volumes:
+      # Volume para dados persistentes (projetos salvos)
+      - logviewer-data:/var/www/html/data
+      # Opcional: mapear diretório de logs locais
+      # - C:/xampp/htdocs:/htdocs
+    restart: unless-stopped
+    environment:
+      - APACHE_DOCUMENT_ROOT=/var/www/html/public
+
+volumes:
+  logviewer-data:
+    driver: local
+

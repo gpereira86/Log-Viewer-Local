@@ -1,0 +1,39 @@
+# Dependências
+/vendor/
+composer.lock
+
+# Arquivos de configuração sensíveis
+config/.encryption_key
+config/app.php
+.env
+.env.local
+
+# Dados sensíveis
+/data/projects.json
+/data/*.json
+
+# Logs
+*.log
+logs/
+
+# Arquivos temporários
+*.tmp
+*.temp
+*.cache
+.DS_Store
+Thumbs.db
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Build
+build/dist/
+*.tar.gz
+
+# Sistema
+node_modules/
+npm-debug.log

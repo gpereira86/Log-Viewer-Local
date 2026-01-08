@@ -1,0 +1,10 @@
+# Protege o diretório de dados contra acesso direto
+<FilesMatch "\.(json|txt|log)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Alternativa para Apache 2.4+
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>

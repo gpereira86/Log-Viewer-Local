@@ -1,0 +1,20 @@
+<?php
+
+/**
+ * Arquivo de configuração da aplicação
+ * 
+ * Copie este arquivo para app.php e ajuste conforme necessário
+ * NUNCA commite o arquivo app.php no Git
+ */
+
+return [
+    // Diretório onde os dados serão armazenados
+    'data_dir' => __DIR__ . '/../data',
+    
+    // Método de criptografia (não altere após criar dados)
+    'encryption_method' => 'AES-256-CBC',
+    
+    // Chave de criptografia (gerada automaticamente se não especificada)
+    // A chave será salva em config/.encryption_key
+    // 'encryption_key' => 'sua-chave-aqui',
+];

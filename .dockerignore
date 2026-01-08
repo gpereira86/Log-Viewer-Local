@@ -1,0 +1,41 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Docker
+docker-compose.yml
+Dockerfile
+build/
+.dockerignore
+
+# Documentação
+README.md
+*.md
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+logs/
+
+# Temporários
+*.tmp
+*.bak
+*.backup
+logviewer_modal.php.bk
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Desenvolvimento
+.env.local
+.env.development
+

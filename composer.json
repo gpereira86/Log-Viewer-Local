@@ -1,0 +1,30 @@
+{
+    "name": "logviewer/logviewer",
+    "description": "Sistema profissional de visualização de logs com suporte a local, SSH e URL",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "LogViewer Team"
+        }
+    ],
+    "require": {
+        "php": ">=8.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "LogViewer\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "LogViewer\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
