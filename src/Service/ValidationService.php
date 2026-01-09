@@ -26,6 +26,8 @@ class ValidationService
             $path = trim($data['path'] ?? '');
             if (empty($path)) {
                 $errors['path'] = 'Caminho é obrigatório para projetos locais.';
+            } elseif (!self::isAbsolutePath($path)) {
+                $errors['path'] = 'O caminho deve ser absoluto. Exemplo: /htdocs/... ou C:\\xampp\\htdocs\\... ou /var/log/...';
             }
         } elseif ($type === 'ssh') {
             $host = trim($data['ssh_host'] ?? '');
@@ -91,5 +93,30 @@ class ValidationService
         }
 
         return $sanitized;
+    }
+
+    /**
+     * Verifica se um caminho é absoluto (Windows ou Unix)
+     * @param string $path
+     * @return bool
+     */
+    private static function isAbsolutePath(string $path): bool
+    {
+        // Caminho Unix: começa com /
+        if (str_starts_with($path, '/')) {
+            return true;
+        }
+        
+        // Caminho Windows: começa com letra: (ex: C:\, D:\, etc)
+        if (preg_match('/^[A-Za-z]:[\/\\\\]/', $path)) {
+            return true;
+        }
+        
+        // Caminho Windows UNC: começa com \\
+        if (str_starts_with($path, '\\\\')) {
+            return true;
+        }
+        
+        return false;
     }
 }

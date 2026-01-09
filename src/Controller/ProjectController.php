@@ -57,7 +57,9 @@ class ProjectController
                 $project['url_api_key'] = trim($input['url_api_key'] ?? '') ?: null;
                 $project['url_api_key_header'] = trim($input['url_api_key_header'] ?? 'X-API-Key') ?: 'X-API-Key';
             } else {
-                $project['path'] = trim($input['path'] ?? '');
+                // Normaliza caminho local (converte Windows para formato compatível)
+                $rawPath = trim($input['path'] ?? '');
+                $project['path'] = $this->normalizeLocalPath($rawPath);
             }
 
             // Valida os dados
@@ -65,6 +67,30 @@ class ProjectController
             if (!empty($errors)) {
                 ResponseService::error('Dados inválidos', 400, ['errors' => $errors]);
                 return;
+            }
+            
+            // Validação adicional para projetos locais: verifica se o caminho existe e é acessível
+            if ($type === 'local' && !empty($project['path']) && is_string($project['path'])) {
+                $testPath = (string)$project['path'];
+                
+                // Tenta mapear o caminho se estiver em Docker
+                if (class_exists('LogViewer\Config\PathMapper')) {
+                    $testPath = \LogViewer\Config\PathMapper::mapPath($testPath);
+                }
+                
+                // Verifica se o caminho existe e é um diretório
+                if (!is_dir($testPath)) {
+                    $errors['path'] = 'O caminho especificado não existe ou não é um diretório acessível. Use o botão "Navegar" ao lado do campo para selecionar um caminho válido da lista.';
+                    ResponseService::error('Dados inválidos', 400, ['errors' => $errors]);
+                    return;
+                }
+                
+                // Verifica se o diretório é legível
+                if (!is_readable($testPath)) {
+                    $errors['path'] = 'O diretório especificado não tem permissão de leitura. Use o botão "Navegar" para selecionar um diretório acessível.';
+                    ResponseService::error('Dados inválidos', 400, ['errors' => $errors]);
+                    return;
+                }
             }
 
             $this->repo->save($project);
@@ -708,6 +734,45 @@ class ProjectController
             'current_path' => $currentPath,
             'items' => $items
         ];
+    }
+
+    /**
+     * Normaliza caminho local (converte Windows para Unix quando possível)
+     */
+    private function normalizeLocalPath(string $path): string
+    {
+        $path = trim($path);
+        
+        if ($path === '') {
+            return '';
+        }
+        
+        // Normaliza barras para /
+        $path = str_replace('\\', '/', $path);
+        $path = preg_replace('/\/+/', '/', $path);
+        $path = rtrim($path, '/');
+        
+        // Converte caminhos Windows comuns para formato Unix
+        // Exemplo: C:/xampp/htdocs/... -> /htdocs/...
+        if (preg_match('/^[A-Za-z]:\/xampp\/htdocs\/(.+)$/i', $path, $matches)) {
+            return '/htdocs/' . $matches[1];
+        }
+        
+        // Converte outros caminhos Windows comuns
+        // Exemplo: C:/htdocs/... -> /htdocs/...
+        if (preg_match('/^[A-Za-z]:\/htdocs\/(.+)$/i', $path, $matches)) {
+            return '/htdocs/' . $matches[1];
+        }
+        
+        // Se for caminho Windows que não corresponde aos padrões acima,
+        // tenta converter para formato Unix genérico (remove a letra do drive)
+        // Exemplo: C:/outro/caminho -> /outro/caminho
+        if (preg_match('/^[A-Za-z]:\/(.+)$/i', $path, $matches)) {
+            return '/' . $matches[1];
+        }
+        
+        // Se já está em formato Unix, apenas retorna
+        return $path;
     }
 
     /**

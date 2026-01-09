@@ -354,18 +354,48 @@
 
     document.getElementById('project-form').addEventListener('submit', async (e) => {
         e.preventDefault();
+        
+        // Remove mensagens de erro anteriores
+        document.querySelectorAll('.field-error').forEach(el => el.remove());
+        document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+        
         const formData = new FormData(e.target);
         const res = await fetch('/api/projects', {
             method: 'POST',
             body: formData
         });
         if (!res.ok) {
-            let msg = 'Erro ao salvar projeto';
             try {
                 const err = await res.json();
-                msg = err.error || msg;
-            } catch (_) {}
-            alert(msg);
+                let msg = err.error || 'Erro ao salvar projeto';
+                
+                // Se houver erros específicos por campo, exibe-os
+                if (err.errors && typeof err.errors === 'object') {
+                    const errorMessages = [];
+                    Object.keys(err.errors).forEach(field => {
+                        // Tenta encontrar o campo por diferentes padrões de ID/name
+                        let fieldElement = document.getElementById(`project-${field}`) || 
+                                         document.getElementById(`ssh-${field}`) || 
+                                         document.getElementById(`url-${field}`) ||
+                                         document.querySelector(`[name="${field}"]`);
+                        
+                        if (fieldElement) {
+                            fieldElement.classList.add('is-invalid');
+                            const errorDiv = document.createElement('div');
+                            errorDiv.className = 'field-error text-danger small mt-1';
+                            errorDiv.textContent = err.errors[field];
+                            fieldElement.parentElement.appendChild(errorDiv);
+                        }
+                        errorMessages.push(`${field}: ${err.errors[field]}`);
+                    });
+                    // Mostra também a mensagem geral com detalhes
+                    msg += '\n\nErros encontrados:\n' + errorMessages.join('\n');
+                }
+                
+                alert(msg);
+            } catch (_) {
+                alert('Erro ao salvar projeto');
+            }
             return;
         }
         e.target.reset();
@@ -377,10 +407,26 @@
         const type = document.getElementById('project-type').value;
         document.querySelectorAll('.type-fields').forEach(el => el.style.display = 'none');
         
+        // Desabilita todos os campos de path antes de habilitar os corretos
+        document.querySelectorAll('input[name="path"]').forEach(input => {
+            input.disabled = true;
+            input.removeAttribute('name'); // Remove o name temporariamente
+        });
+        
         if (type === 'local') {
             document.getElementById('fields-local').style.display = 'block';
+            const localPathInput = document.getElementById('project-path');
+            if (localPathInput) {
+                localPathInput.disabled = false;
+                localPathInput.setAttribute('name', 'path');
+            }
         } else if (type === 'ssh') {
             document.getElementById('fields-ssh').style.display = 'block';
+            const sshPathInput = document.getElementById('ssh-path');
+            if (sshPathInput) {
+                sshPathInput.disabled = false;
+                sshPathInput.setAttribute('name', 'path');
+            }
         } else if (type === 'url') {
             document.getElementById('fields-url').style.display = 'block';
         }
@@ -888,6 +934,14 @@
     });
 
     // Inicialização
+    // Garante que o campo path correto tenha o atributo name na inicialização
+    const initialType = document.getElementById('project-type').value;
+    if (initialType === 'local') {
+        document.getElementById('project-path').setAttribute('name', 'path');
+    } else if (initialType === 'ssh') {
+        document.getElementById('ssh-path').setAttribute('name', 'path');
+    }
+    
     toggleTypeFields();
     toggleUrlAuth();
     loadProjects();
